@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <script src="js/jquery-1.10.1.min.js" type="text/javascript"></script>
+    <script src="js/phaser.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        var cw = 500,
+            ch = 500,
+            player,
+            floor,
+            plrw = 25,
+            plrh = 25,
+            keyboard,
+            Isjumping,
+            plrspeedX = 15,
+            plrspeedY = 15; //,
+        var game = new Phaser.Game(cw, ch, Phaser.AUTO, 'gameArea');
+        var Main = function (game) { };
+       
+        
+        Main.prototype = {
+            preload: function () {
+                game.load.image('player', 'img/jumper/player.png');
+                game.load.image('floor', 'img/jumper/floor.png');
+                
+            },
+            create: function () {
+                game.stage.backgroundColor = '#e6e6e6';
+              
+                game.physics.startSystem(Phaser.Physics.ARCADE);
+                game.physics.arcade.gravity.y = 200;
+                player = game.add.sprite(cw / 2, ch - plrh-20, 'player');
+                floor = game.add.sprite(0, ch - 14, 'floor');
+                player.anchor.setTo(0.5, 0.5);
+                game.physics.enable(player, Phaser.Physics.ARCADE);
+                keyboard = game.input.keyboard.createCursorKeys();
+            },
+            update: function () {
+                
+                this.MovePlayer();
+            },
+            MovePlayer: function(){
+                if (keyboard.left.isDown) {
+                   player.body.velocity.x -= plrspeedX;
+                }
+                if (keyboard.right.isDown) {
+                    player.body.velocity.x += plrspeedX;
+                }
+                if (keyboard.up.isDown && !Isjumping)
+                {
+                    player.body.moveUp(300);
+                    Isjumping = true;
+                }
+
+
+
+                if (player.body.x >= cw-plrw)
+                {
+                    player.body.x = cw-plrw;
+                }
+                else if (player.body.x <= 0) {
+                    player.body.x =0;
+                }
+            }
+        }
+        game.state.add("Main", Main);
+        game.state.start("Main");
+    </script>
+</head>
+<body>
+    <div id="gameArea"></div>
+</body>
+</html>

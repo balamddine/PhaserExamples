@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+    <head>
+        <title>StreetFighter!</title>
+        <script src="js/phaser.js" type="text/javascript"></script>
+    </head>
+    <body>
+
+    <script type="text/javascript">
+        var cw = 500, ch = 500, Ken, Ken2;
+        var punchKey; var punchKey; var kickKey; var HardKick; var HadoukenKey; var cursorKey;
+        var game = new Phaser.Game(500, 500, Phaser.AUTO, '', { preload: preload, create: create,update:update });
+
+        function preload() {
+            game.load.spritesheet('ken', 'img/fighting/ken.png', 70, 80);
+            game.load.spritesheet('ken2', 'img/fighting/ken2.png', 70, 80);
+        }
+        function create() {
+            game.physics.startSystem(Phaser.Physics.ARCADE);
+            game.physics.arcade.gravity.y = 100;
+
+            Ken = game.add.sprite(70, ch - 80, 'ken');
+            game.physics.enable(Ken, Phaser.Physics.ARCADE);
+            Ken.enableBody = true;
+            Ken.body.collideWorldBounds = true;
+            Ken.anchor.setTo(0.5, 0.5);
+            Ken2 = game.add.sprite(cw - 70, ch - 80, 'ken');
+            Ken2.enableBody = true;
+            game.physics.enable(Ken2, Phaser.Physics.ARCADE);
+            Ken2.body.collideWorldBounds = true;
+            Ken2.animations.add('idle', [7, 8, 9, 10], 10, true);
+            Ken2.animations.add('jump', [56, 57, 58, 59, 60, 61, 62, 7], 10, false);
+            Ken2.scale.x *= -1;
+            Ken2.anchor.setTo(0.5, 0.5);
+            Ken.animations.add('idle', [7, 8, 9, 10], 10, true);
+            Ken.animations.add('jump', [56, 57, 58, 59, 60, 61, 62, 7], 10, false);
+            Ken.animations.add('duck', [63], 10, false);
+            Ken.animations.add('walk', [21, 22, 23, 24, 25], 10, false);
+            Ken.animations.add('hadouken', [0,1,2,3], 10, false);
+            Ken.animations.add('punch', [14, 15, 16], 10, false);
+            Ken.animations.add('kick', [42, 43, 44, 45, 46,7], 10, false);
+            Ken.animations.add('Hardkick', [49, 50, 51, 52, 53, 7], 10, false);
+
+            cursorKey = game.input.keyboard.createCursorKeys();
+            punchKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
+            kickKey = game.input.keyboard.addKey(Phaser.Keyboard.S);
+            HardKick = game.input.keyboard.addKey(Phaser.Keyboard.D);
+            HadoukenKey = game.input.keyboard.addKey(Phaser.Keyboard.W);
+            Ken.animations.play('idle');
+            Ken2.animations.play('idle');
+            
+        }
+        function collisionPlayerEnemy(player, enemy) {
+            
+        }
+        function update() {
+        
+            if (cursorKey.right.isDown) { // walk right
+                Ken.animations.play('walk');
+                Ken.x += 2;
+            }
+            else if (cursorKey.left.isDown) { // walk left
+                Ken.animations.play('walk');
+                Ken.x -= 2;
+            }
+            else if (cursorKey.up.isDown && Ken.body.onFloor()) { // jump
+                Ken.body.velocity.y = -40;
+            }
+            else if (cursorKey.down.isDown) { // duck
+                Ken.animations.play('duck');
+            }
+            else if (punchKey.isDown) { // punch
+                Ken.animations.play('punch');
+            }
+            else if (HadoukenKey.isDown) { // punch
+                Ken.animations.play('hadouken');
+            }
+            else if (kickKey.isDown) { // kick
+                Ken.animations.play('kick');
+            }
+            else if (HardKick.isDown) { // hard kick
+                Ken.animations.play('Hardkick');
+            }
+            else {
+                if (!Ken.body.onFloor()) {
+                    Ken.animations.play('jump');
+                    Ken2.animations.play('jump');
+                } else {
+                    Ken.animations.play('idle');
+                    //Ken2.animations.play('idle');
+                }
+            }
+            game.physics.arcade.overlap(Ken, Ken2, collisionPlayerEnemy, null, this);
+        }
+    </script>
+
+    </body>
+</html>

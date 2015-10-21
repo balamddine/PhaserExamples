@@ -1,0 +1,140 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>TieldMap</title>
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
+
+    <style type="text/css">
+        html, body {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+    <script src="js/jquery-1.10.1.min.js" type="text/javascript"></script>
+
+    <script src="js/phaser.js" type="text/javascript"></script>
+  
+
+    <script type="text/javascript">
+        var cw = $(window).width();
+        var ch = $(window).height();
+       
+        var game = new Phaser.Game(cw,ch, Phaser.CANVAS, 'phaser-game', { preload: preload, create: create, update: update,render:render });
+        $(window).resize(function () { resizer(); });
+        
+        
+        function preload() {
+
+            game.load.tilemap('background', 'img/TiledMap/Map.json', null, Phaser.Tilemap.TILED_JSON);
+            game.load.image('tiles', 'img/TiledMap/background.png');
+            game.load.image('player', 'img/runner/Player.png');
+
+        }
+
+        var map;
+        var tileset;
+        var layer;
+        var p;
+        var cursors;
+        var jumping;
+        var jumpLength = 500, jumpHeight = 150;
+        function ScaleGame()
+        {
+            game.scale.scaleMode = Phaser.ScaleManager.RESIZE;
+            game.scale.pageAlignHorizontally = true;
+            game.scale.pageAlignVertically = true;
+            game.scale.setScreenSize(true);
+
+        }
+        function create() {
+            ScaleGame();
+            game.physics.startSystem(Phaser.Physics.ARCADE);
+            game.stage.backgroundColor = '#787878';
+            map = game.add.tilemap('background');
+            map.addTilesetImage('Background', 'tiles');
+            layer = map.createLayer('Tile Layer 1');
+            //  Un-comment this on to see the collision tiles
+            // layer.debug = true;
+            map.setCollisionByExclusion([0],true);
+            layer.resizeWorld();
+            
+            p = game.add.sprite(32, game.world.height - 20, 'player');
+
+            game.physics.enable(p);
+
+            game.physics.arcade.gravity.y = 350;
+
+          //  p.body.bounce.y = 0.2;
+            p.body.linearDamping = 1;
+            p.body.collideWorldBounds = true;
+            p.anchor.setTo(0.5, 1);
+            game.camera.follow(p);
+            game.input.onDown.add(jump, this);
+            cursors = game.input.keyboard.createCursorKeys();
+
+        }
+        var pointer;
+        function jump() {
+            if (p.jumping) {
+                return;   
+            }
+            p.angle = 0;
+            p.jumping = true;
+            game.add.tween(p)
+                .to({ y: p.body.y - jumpHeight }, jumpLength * 0.5, Phaser.Easing.Quadratic.Out)
+                .to({ y: p.body.y }, jumpLength * 0.5, Phaser.Easing.Quadratic.In).start();
+            game.add.tween(p)
+                .to({ angle: 360 }, jumpLength, Phaser.Easing.Linear.None, true)
+                .onComplete.add(function() {
+                    p.jumping = false;
+                }, this);
+        }
+        
+        function update() {
+            game.physics.arcade.collide(p, layer);
+            CheckMovement();
+        }
+        
+        function CheckMovement() {
+           p.body.x += 5;
+           if (p.body.y >= game.world.height-p.body.height) {
+                p.body.x = 32;
+                p.body.y = game.world.height - 54;
+            }
+        }
+
+        function render()
+        {
+            game.debug.bodyInfo(p, 32, 32);
+        }
+        function resizer() {
+            var myheight = $(window).height();
+            var mywidth = $(window).width();
+            try {
+                $("#GamePanel").width = Number(mywidth);
+                $("#GamePanel").height = Number(myheight);
+                game.width = Number(mywidth);
+                
+                game.height = Number(myheight);
+                game.stage._bounds.width = Number(mywidth);
+                game.stage._bounds.height = Number(myheight);
+                game.renderer.resize(Number(mywidth), Number(myheight));
+                Phaser.Canvas.setSmoothingEnabled(game.context, false);
+            }
+            catch (e) {
+                console.log("Error description: " + e.message);
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="GamePanel">
+        <div id="phaser-game"></div>
+    </div>
+    
+   
+
+</body>
+</html>

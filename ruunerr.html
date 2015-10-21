@@ -1,0 +1,21 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Runner</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" />
+    <script src="js/phaser.min.js" type="text/javascript"></script>
+    <script src="js/Runner/Game.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        var cw = window.innerWidth,
+                ch = window.innerHeight;
+        var game = new Phaser.Game(cw, ch, Phaser.AUTO, 'container');
+        game.state.add('Boot', Runner.Boot);
+        game.state.start('Boot');
+    </script>
+</head>
+<body>
+<div id="container"></div>
+</body>
+</html>

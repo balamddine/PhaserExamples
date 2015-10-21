@@ -1,0 +1,34 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+
+    <script type="text/javascript">
+        
+        var rope;
+        var theGame = function (game) { };
+        var menu = function (game) { };
+        theGame.prototype = {
+            preload: function () { },
+            create: function () { },
+            update: function () { },
+            render:function(){}
+
+        };
+        menu.prototype = {
+            preload: function () { },
+            create: function () { },
+            update: function () { },
+            render: function () { }
+
+        };
+        var game = new Phaser.Game(800, 500, Phaser.AUTO, 'phaser-example');
+        game.state.add("thegame", theGame);
+        game.state.add("Menu", menu);
+        game.state.start("thegame");
+    </script>
+</head>
+<body>
+
+</body>
+</html>

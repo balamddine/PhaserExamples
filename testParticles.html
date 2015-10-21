@@ -1,0 +1,95 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>test 4</title>
+    <script src="js/phaser.min.js" type="text/javascript"></script>
+    <script type="text/javascript" >
+        var cw = 800, ch = 600;
+        var game = new Phaser.Game(cw, ch, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+
+        var Megra; var Particles;
+
+        function preload() {
+             game.load.atlasJSONHash('tst', 'img/tst.png', 'img/tst.json');
+        }
+
+        function create() {
+            game.physics.startSystem(Phaser.Physics.ARCADE);
+            Megra = game.add.sprite(cw / 3, ch / 4, 'tst', 'nrm_slap_00000');
+            Particles = game.add.group();
+            Particles.enableBody = true;
+            Particles.physicsBodyType = Phaser.Physics.ARCADE;
+            for (var i = 0; i < 10; i++) {
+                var x = game.rnd.integerInRange(game.world.centerX + (i * i), cw / i );
+                var y = game.rnd.integerInRange(game.world.centerY + (i * i), ch / i + (i * i));
+                //  Create a new sprite at a random screen location
+                var newSprite = game.add.sprite(x, y, 'tst', 'nrm_slap_00000');
+             
+              //  newSprite.enableBody = true;
+               
+                newSprite.scale.setTo(0.3, 0.3);
+               // 
+                Particles.add(newSprite);
+                newSprite.body.velocity.x = x;
+                newSprite.body.velocity.y = y;
+            }
+           
+            Particles.setAll('anchor.x', 0.5);
+            Particles.setAll('checkWorldBounds', true);
+            Particles.setAll('body.collideWorldBounds', true);
+            Particles.setAll('outOfBoundsKill', true);
+            game.canvas.addEventListener('mouseout', onMouseOut, true);
+            game.canvas.addEventListener('mousemove',onMouseMove, true);
+          //  particle1 = game.add.sprite(game.world.centerX, game.world.centerY, 'tst', 'nrm_slap_00000');
+            
+           
+        }
+        var MouseIn = false;
+        function onMouseOut() {
+            MouseIn = false;
+        }
+        function onMouseMove()
+        {
+            MouseIn = true;
+        }
+       function update() {
+            game.add.tween(Megra).to({ x: 50 }, 1000 + Math.random() * 3000, Phaser.Easing.Circular.InOut);
+            Particles.forEach(function (item) {
+               
+                if (MouseIn) {
+                    follow= game.physics.arcade.moveToPointer(item, 200);
+                     if (Phaser.Rectangle.contains(item.body, game.input.x, game.input.y)) {
+                         item.body.velocity.setTo(0, 0);
+                     }
+                }
+                else {
+                   item.body.velocity.x = 0;
+                    item.body.velocity.y = 0;
+                   // if (item.x >= (cw - item.body.width)) {
+                    //item.body.x = game.rnd.integerInRange(game.world.centerX, game.world.centerX+200);
+                   // item.body.y = game.rnd.integerInRange(game.world.centerY, game.world.centerY + 100);
+                   // }
+                 
+                    //bounce2.start();
+                }
+
+               
+                //if()
+                //else {
+                
+                //}
+                
+            });
+          
+
+
+          
+        }
+      
+    </script>
+</head>
+
+<body>
+
+</body>
+</html>

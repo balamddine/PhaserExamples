@@ -1,0 +1,55 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title> Test</title>
+    <script src="js/jquery-1.10.1.min.js"></script>
+    <script src="js/phaser.min.js"></script>
+    <script type="text/javascript">
+        var cw = 1500, ch = 500,test,text;
+        var game = new Phaser.Game(cw, ch, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+        function preload()
+        {
+            text = game.add.text(game.world.width / 4 + 20, game.world.height / 2, '', { fill: '#000000' });
+            
+            game.load.spritesheet('loadinglogo', 'img/LoadingCircle.png', 102, 102, 8);
+            /* those images are just for test */
+            game.load.spritesheet('ken', 'img/fighting/ken.png', 70, 80);
+            game.load.image('logo', 'img/Dots-game-logo.png');
+            game.load.image('buttonPlay', 'img/Ninja/play.png');
+            game.load.image('buttonleft', 'img/Ninja/Left.png');
+            game.load.image('buttonRight', 'img/Ninja/Right.png');
+            game.load.image('buttonSpeed', 'img/Ninja/speed.png');
+            game.load.image('buttonPlay1', 'img/1.jpg');
+            game.load.image('buttonleft2', 'img/2.jpg');
+            game.load.image('buttonRight3', 'img/3.jpg');
+            game.load.image('buttonRight4', 'img/4.jpg');
+            game.load.image('buttonSpeed', 'img/Ninja/speed.png');
+            game.load.image('volumeup', 'img/Ninja/volume-up.png');
+            game.load.image('mute', 'img/Ninja/mute.png');
+            /* finish test images */
+          //  game.load.onLoadStart.add(loadStart, this);
+            game.load.onFileComplete.add(fileComplete, this);
+            game.load.onLoadComplete.add(loadComplete, this);
+          //  
+         }
+        function create() {
+            game.stage.backgroundColor = "#FFFFFF";
+           
+            game.add.sprite(game.world.width / 6-20, game.world.height / 4 - 60, 'logo');
+            test = game.add.sprite(game.world.width / 4, game.world.height / 4, 'loadinglogo');
+            test.animations.add('loadinglogo');
+            test.animations.play('loadinglogo', 30, true);
+         }
+        
+        function loadStart() {  text.Text = "loading..."; }
+        function fileComplete(progress, cacheKey, success, totalLoaded, totalFiles) {
+            text.text = progress + "%";
+        }
+        function loadComplete() { console.log("Load complete...")  }
+        function update() { }
+    </script>
+</head>
+<body>
+
+</body>
+</html>

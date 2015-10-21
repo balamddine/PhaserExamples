@@ -1,0 +1,337 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>SpeedFighter</title>
+    <style type="text/css">
+        html, body
+        {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            
+        }
+    canvas
+    {
+        cursor:url(img/Speedfighter/pointer.png),default !important;
+        }
+        
+    </style>
+    <script src="js/jquery-1.10.1.min.js" type="text/javascript"></script>
+    <script src="js/phaser.js" type="text/javascript"></script>
+    <link rel="shortcut icon" type="image/x-icon" href="img/Speedfighter/turret.png" />
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
+    <script type="text/javascript">
+        var cw = window.innerWidth, ch = window.innerHeight, plrw = 64, plrh = 53, plrspeed = 3; //,
+        var game = new Phaser.Game(cw, ch, Phaser.AUTO, 'gameArea');
+        $(window).resize(function () { resizer(); });
+        var textObj;var enemycountTxt;
+        var currentHealth = 452;
+        var MaxHealth = 452;
+        var Healthbarwidth = 452;
+        var HealthcropRec;
+        var healthAdj = 2;
+        var enemySpeed = 180;
+        var score = 0;
+        var enemyCount = 15;
+        var maxEnemyCount = 80;
+        var displayNextEnemyTime = 2500;
+        var BulletFireRate = 150; 
+        var nextBulletFire = 0;
+        var healthbar;
+        var player;
+        var enemies;
+        var graphics;
+        var explosions;
+        var explosions2;
+        var keyboard;
+        var Explodkey;
+        var Explodbtn;
+        var exploadbtnCnt = 0;
+        var pointer;
+        var Bullets;
+        var potionsGroup;
+        var PotionFireRate = 30*1000;
+        var NextPotionSend = 0;
+        var PotionValue = 200;
+        // Game States
+        var intro = function (game) { };
+        var Main = function (game) { };
+        intro.prototype = {
+            preload: function () {
+                game.load.image('starfield', 'img/Galaxy/starfield.png');
+            },
+            create: function () {
+                starfield = game.add.tileSprite(0, 0, cw, ch, 'starfield');
+                textObj = game.add.text((cw / 2)-100,(ch/2)-100, "P L A Y", { font: "38px Arial", fill: "#FFFFFF", align: "center" });
+                textObj.inputEnabled = true;
+                textObj.events.onInputDown.add(Play, this);
+                textObj.events.onInputOver.add(PlayOver, this);
+                textObj.events.onInputOut.add(PlayOut, this);
+            },
+            update: function () {
+                starfield.tilePosition.y += 2;
+            }
+        };  // end Intro
+        Main.prototype = {
+            preload: function () {
+                game.load.image('starfield', 'img/Galaxy/starfield.png');
+                game.load.image('bullet', 'img/Galaxy/bullet2.png');
+                game.load.image('explodbtn', 'img/Speedfighter/Explodbtn.png');
+                game.load.image('player', 'img/Speedfighter/turret.png');
+                game.load.image('HealthBar', 'img/Speedfighter/Healthbar.png');
+                game.load.image('Potion', 'img/Speedfighter/potion.png');
+                game.load.spritesheet('enemy', 'img/Speedfighter/enemies.png', 96, 96, 12);
+                game.load.spritesheet('kaboom', 'img/Speedfighter/explode2.png', 64, 64, 16);
+                game.load.spritesheet('explod', 'img/Speedfighter/explode.png', 256, 128, 12);
+            },
+            create: function () {
+                game.physics.startSystem(Phaser.Physics.ARCADE);
+                starfield = game.add.tileSprite(0, 0, cw, ch, 'starfield');
+                player = game.add.sprite(cw / 2, ch - plrw, 'player');
+                player.anchor.setTo(0.5, 0.5);
+
+
+                textObj = game.add.text(cw - 180, 5, "S C O R E : " + score, { font: "16px Arial", fill: "#FF0000", align: "center" });
+                EnemycountTxt= game.add.text(30,5, "E N E M I E S : " + enemyCount, { font: "16px Arial", fill: "#FFFFFF", align: "center" });
+                DrawPlayerLife();
+                CreatePlayerBullets();
+                CreateExplosionPool();
+                CreatePotionPool();
+                enemies = game.add.group();
+                enemies.enableBody = true;
+                enemies.physicsBodyType = Phaser.Physics.ARCADE;
+                enemies.setAll('anchor.x', 0.5);
+                enemies.setAll('anchor.y', 1);
+
+                CreateEnemies(enemyCount);
+
+
+                game.physics.enable(player, Phaser.Physics.ARCADE);
+                keyboard = game.input.keyboard.createCursorKeys();
+                Explodkey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+                Explodbtn = game.add.button(0, ch - 65, 'explodbtn', actionOnClick, this);
+            },
+            update: function () {
+                pointer = game.input.mousePointer; // game.input.pointer1; 
+                starfield.tilePosition.y += 2;
+                player.rotation = game.physics.arcade.angleToPointer(player);
+
+                if (pointer.isDown) {
+                    FireBullets();
+                }
+                if (Explodkey.isDown) {
+                    ExplodEnemies();
+                }
+
+                game.physics.arcade.overlap(Bullets, enemies, collisionBulletEnemy, null, this);
+                game.physics.arcade.overlap(Bullets, potionsGroup, collisionBulletPotion, null, this);
+                game.physics.arcade.overlap(player, enemies, collisionPlayerEnemy, null, this);
+                
+                SendPotion();
+               
+            }
+
+        };          //end Main
+        function actionOnClick() {
+            exploadbtnCnt++;
+            if (exploadbtnCnt <= 3) {
+                if (exploadbtnCnt == 3) { Explodbtn.alpha = 0.3; }
+                ExplodEnemies();
+            }
+
+        }
+        function DrawPlayerLife() {
+            healthbar = game.add.sprite(10, 10, 'HealthBar');
+            healthbar.cropEnabled = true;
+            healthbar.alpha = 0.5;
+        }
+        function collisionBulletEnemy(bullet, enemy) {
+            bullet.kill();
+            enemy.kill();
+            var explosion = explosions.getRandom(0, explosions.length - 1);
+            if (explosion) {
+                explosion.reset(enemy.body.x + 30, enemy.body.y + 8);
+                explosion.play('kaboom', 30, false, true);
+            }
+            score += 10;
+            textObj.text = "S C O R E : " + score;
+            if (enemies.countDead() == enemyCount) {
+                setTimeout(function () {
+                    NextStage();
+                }, displayNextEnemyTime);
+            }
+        }
+        function NextStage() {
+            if (enemies.countLiving() == 0) {
+                enemyCount += 5;  //game.rnd.integerInRange(15, 300);
+                EnemycountTxt.text = "E N E M I E S : " + enemyCount;
+                enemies.destroy(true, true); //children | but keep the group 
+                CreateEnemies();
+            }
+        }
+
+        function ExplodEnemies() {
+            var explosion = explosions2.getRandom(0, explosions2.length - 1);
+            if (explosion) {
+                explosion.reset(cw / 2, ch / 2);
+                explosion.play('explod', 30, false, true);
+                enemies.callAll('kill');
+                score += enemies.length;
+            }
+            textObj.text = "S C O R E :" + score;
+            setTimeout(function () {
+                NextStage();
+            }, displayNextEnemyTime);
+        }
+        function collisionBulletPotion(bullet, potion) {
+            potion.kill();
+            bullet.kill();
+            if (currentHealth == MaxHealth) {return; }
+            if (currentHealth < MaxHealth) {
+            currentHealth = currentHealth + PotionValue;
+            HealthcropRec = new Phaser.Rectangle(0, 0, 14, currentHealth);
+            healthbar.crop(HealthcropRec);
+          }
+        }
+        function collisionPlayerEnemy(player, enemy) {
+            var explosion = explosions.getRandom(0, explosions.length - 1);
+            if (explosion) {
+                explosion.reset(player.body.x + 30, player.body.y + 8);
+                explosion.play('kaboom', 30, false, true);
+            }
+            currentHealth -= healthAdj;
+            var h = (currentHealth / MaxHealth) * Healthbarwidth;
+           
+            HealthcropRec = new Phaser.Rectangle(0,0,14,h);
+            healthbar.crop(HealthcropRec);
+            if (h <= 0) { // the player has died
+                var explosion = explosions2.getRandom(0, explosions.length - 1);
+                if (explosion) { // draw an explostion on player
+                    explosion.reset(player.body.x + 30, player.body.y + 8);
+                    explosion.play('explod', 30, false, true);
+                    healthbar.kill();// remove the health bar
+                    player.kill(); // remove the player
+                    Bullets.destroy(true, true);
+                    enemies.destroy(true, true);
+                    potionsGroup.destroy(true, true);
+                    RestartGame();
+                }
+            }
+        }
+        function RestartGame() {
+            var t = game.add.text((cw / 2) - 100, (ch / 2) - 100, "Y O U - L O S T!!! \n\n\n\n\n\n\n\n R E S T A R T", { font: "25px Arial", fill: "#FFFFFF", align: "center" });
+           t.inputEnabled = true;
+           t.events.onInputDown.add(RestGa, this);
+        }
+        function RestGa(sprite, pointer) {
+            CreateEnemies();
+            CreatePlayerBullets();
+            player.revive();
+            currentHealth = 452;
+            enemyCount = 15;
+            score = 0;
+            
+            game.state.start("intro");
+        }
+        function CreatePlayerBullets() {
+            Bullets = game.add.group();
+            Bullets.enableBody = true;
+            Bullets.physicsBodyType = Phaser.Physics.ARCADE;
+            Bullets.createMultiple(50, 'bullet');
+            Bullets.setAll('checkWorldBounds', true);
+            Bullets.setAll('outOfBoundsKill', true);
+        }
+        function CreatePotionPool() {
+            potionsGroup = game.add.group();
+            var potion = game.add.sprite(0,0,'Potion');
+                potionsGroup.add(potion);
+                potion.anchor.set(0.5, 0.5);
+                game.physics.enable(potion, Phaser.Physics.ARCADE);
+                potion.kill();
+            }
+
+            function SendPotion() {
+                if (game.time.now - NextPotionSend < PotionFireRate) return;
+                NextPotionSend = game.time.now;
+                var potion = potionsGroup.getFirstDead();
+                if (potion) {
+                    potion.revive();
+                    potion.checkWorldBounds = true;
+                    potion.outOfBoundsKill = true;
+                    potion.reset(game.world.randomX, game.rnd.integerInRange(0, ch / 2));
+                    potion.body.velocity.y = 170;  //game.rnd.integerInRange(0, 100);
+                }
+            }
+        function CreateEnemies() {
+
+            for (var x = 0; x < enemyCount; x++) {
+                
+                var alien = enemies.create(game.rnd.integerInRange(32, cw), game.rnd.integerInRange(32, ch), 'enemy');
+                alien.anchor.setTo(0.5, 0.5);
+                alien.animations.add('spin');
+                alien.play('spin', 20, true);
+                alien.body.velocity.y = game.rnd.integerInRange(0, 100);
+                alien.body.velocity.x = game.rnd.integerInRange(0, 100);
+                game.physics.arcade.moveToObject(alien, player, enemySpeed);
+
+            }
+            enemies.scale.set(0.8, 0.8);
+            enemies.setAll('body.collideWorldBounds', true);
+            enemies.setAll('body.bounce.x', 1);
+            enemies.setAll('body.bounce.y', 1);
+            enemies.setAll('body.minBounceVelocity', 0);
+        }
+        function FireBullets() {
+            if (game.time.now > nextBulletFire && Bullets.countDead() > 0) {
+                nextBulletFire = game.time.now + BulletFireRate;
+                var bullet = Bullets.getFirstDead();
+                bullet.reset(player.x - 8, player.y - 8);
+                game.physics.arcade.moveToPointer(bullet, 500);
+            }
+        }
+        function CreateExplosionPool() {
+            //  An explosion pool
+            explosions = game.add.group();
+            explosions.createMultiple(80, 'kaboom');
+            explosions.forEach(CreateExplosion, this);
+            explosions2 = game.add.group();
+            explosions2.createMultiple(80, 'explod');
+            explosions2.forEach(CreateExplosion2, this);
+        }
+        function CreateExplosion(obj) {
+            obj.anchor.setTo(0.5, 0.5);
+            obj.animations.add('kaboom');
+        }
+        function CreateExplosion2(obj) {
+            obj.anchor.setTo(0.5, 0.5);
+            obj.animations.add('explod');
+        }
+        game.state.add("intro", intro);
+        game.state.add("Main", Main);
+        game.state.start("intro");
+        function Play(sprite, pointer) { game.state.start("Main"); }
+        function PlayOver(sprite, pointer) { game.canvas.style.cursor = "pointer"; }
+        function PlayOut(sprite, pointer) { game.canvas.style.cursor = "default"; }
+        function resizer() {
+            var myheight = $(window).innerHeight();
+            var mywidth = $(window).innerWidth();
+            try {
+                game.width = Number(mywidth);
+                game.height = Number(myheight);
+                game.stage._bounds.width = Number(mywidth);
+                game.stage._bounds.height = Number(myheight);
+                game.renderer.resize(Number(mywidth), Number(myheight));
+                Phaser.Canvas.setSmoothingEnabled(game.context, false);
+            }
+            catch (e) {
+                console.log("Error description: " + e.message);
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="gameArea">
+    </div>
+</body>
+</html>

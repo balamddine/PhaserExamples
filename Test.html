@@ -1,0 +1,119 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <script src="js/jquery-1.10.1.min.js"></script>
+    <script src="js/phaser.min.js"></script>
+    <script type="text/javascript">
+        // Phaser current version test environment
+        // Jump and spin
+        var cw = $(window).innerWidth();
+        var ch = $(window).innerHeight();
+
+        var game = new Phaser.Game(cw, ch, Phaser.AUTO, 'test');
+        $(window).resize(function () { resizer(); });
+        var BasicGame = function (game) { };
+        var map, layer;
+        var player, jumpLength = 600, jumpHeight = 100;
+
+        BasicGame.Boot = function (game) { };
+
+        BasicGame.Boot.prototype = {
+            preload: function () {
+                game.time.advancedTiming = true;
+                game.load.tilemap('background', '../img/TiledMap/Map.json', null, Phaser.Tilemap.TILED_JSON);
+                game.load.image('tiles', '../img/TiledMap/background.png');
+            },
+            create: function () {
+                this.ScaleGame;
+                game.physics.startSystem(Phaser.Physics.ARCADE);
+                map = game.add.tilemap('background');
+                map.addTilesetImage('Background', 'tiles');
+                layer = map.createLayer('Tile Layer 1');
+                map.setCollisionByExclusion([0], true);
+                layer.resizeWorld();
+                var bmp = game.add.bitmapData(32, 32);
+                bmp.rect(0, 0, 32, 32, '#fff');
+                player = game.add.sprite(35, game.world.height - 32, bmp);
+                game.physics.enable(player);
+
+                game.physics.arcade.gravity.y = 350;
+
+                //  p.body.bounce.y = 0.2;
+                player.body.linearDamping = 1;
+                player.body.collideWorldBounds = true;
+                player.anchor.setTo(0.5, 1);
+                game.camera.follow(player);
+
+                
+                game.input.onDown.add(this.jump, this);
+            },
+            render: function () {
+                game.debug.text(game.time.fps || '--', 2, 14, "#00ff00");
+                game.debug.text("Click/tap to jump", 215, 300, "#ffffff");
+            },
+            update: function () {
+                player.x += 5;
+                game.physics.arcade.collide(player, layer);
+            },
+            jump: function () {
+                // Cancel if already jumping
+                if (player.jumping) {
+                    return;
+                }
+
+                // Reset the angle
+                player.angle = 0;
+
+                // Set the jumping flag
+                player.jumping = true;
+                var CurrentY = player.body.y;
+                var LastY=game.world.height-player.body.height;
+                // Do the 'jump' tweens
+                game.add.tween(player)
+                    .to({ y: CurrentY - jumpHeight }, jumpLength * 0.5, Phaser.Easing.Quadratic.Out)
+                    .to({ y: LastY }, jumpLength * 0.5, Phaser.Easing.Quadratic.In).start();
+
+                // Do the 'spin' tween, and reset the jumping flag when done
+                game.add.tween(player)
+                    .to({ angle: 360 }, jumpLength, Phaser.Easing.Linear.None, true)
+                    .onComplete.add(function () {
+                        player.jumping = false;
+                    }, this);
+            },
+            ScaleGame: function () {
+                
+                game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
+                game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+                game.scale.pageAlignHorizontally = true;
+                game.scale.pageAlignVertically = true;
+                game.scale.setScreenSize(true);
+               
+            }
+        };
+
+        
+        window.resizer = function () {
+            var myheight = $(window).innerHeight();
+            var mywidth = $(window).innerWidth();
+            try {
+                game.width = Number(mywidth);
+                game.height = Number(myheight);
+                game.stage._bounds.width = Number(mywidth);
+                game.stage._bounds.height = Number(myheight);
+                game.renderer.resize(Number(mywidth), Number(myheight));
+                Phaser.Canvas.setSmoothingEnabled(game.context, false);
+            }
+            catch (e) {
+                console.log("Error description: " + e.message);
+            }
+        }
+        game.state.add('Boot', BasicGame.Boot);
+        game.state.start('Boot');
+
+    </script>
+</head>
+<body>
+
+</body>
+</html>

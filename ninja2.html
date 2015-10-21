@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+    <title>Ninja run</title>
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
+   
+     <style type="text/css">
+        html, body
+        {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            
+        }
+        
+        </style>
+  
+</head>
+<body>
+    <div id="screen">
+
+    </div>
+     <script src="js/jquery-1.10.1.min.js" type="text/javascript"></script>
+    <script src="js/phaser.min.js" type="text/javascript"></script>
+    <script src="js/SpeedNinja/Boot.js" type="text/javascript"></script>
+    <script src="js/SpeedNinja/Preloader.js" type="text/javascript"></script>
+    
+    <script src="js/SpeedNinja/MainMenu.js" type="text/javascript"></script>
+    <script src="js/SpeedNinja/Tutorial.js" type="text/javascript"></script>
+     <script src="js/SpeedNinja/Game.js" type="text/javascript"></script>
+    <script type="text/javascript">
+            var cw = screen.width,
+                ch = screen.height;
+
+
+            $(window).resize(function () { resizer(); });
+            var game = new Phaser.Game(cw, ch, Phaser.WEBGL, 'screen');
+            // add game states
+            game.state.add('Boot', Ninja.Boot);
+            game.state.add('Preloader', Ninja.Preloader);
+            
+            game.state.add('MainMenu', Ninja.MainMenu);
+            game.state.add('Tutorial', Ninja.Tutorial);
+            game.state.add('Game', Ninja.Game);
+            // start the Boot state
+            game.state.start('Boot');
+            window.resizer=function() {
+                var myheight = $(window).innerHeight();
+                var mywidth = $(window).innerWidth();
+                try {
+                    game.width = Number(mywidth);
+                    game.height = Number(myheight);
+                    game.stage._bounds.width = Number(mywidth);
+                    game.stage._bounds.height = Number(myheight);
+                    game.renderer.resize(Number(mywidth), Number(myheight));
+                    Phaser.Canvas.setSmoothingEnabled(game.context, false);
+                }
+                catch (e) {
+                    console.log("Error description: " + e.message);
+                }
+            } 
+  </script>  
+</body>
+</html>

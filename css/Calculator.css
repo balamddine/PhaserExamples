@@ -1,0 +1,36 @@
+﻿html, body {
+font-family: fantasy;
+}
+.btn {
+font-size: 20px;
+height: 40px;
+padding-left: 7px;
+padding-top: 2px;
+width: 40px;
+}
+.container {
+position:absolute;
+top:40%;
+left:40%;
+}
+.dv_Res_Cont {
+border: 1px solid black;
+height: 38px;
+padding-right: 5px;
+padding-top: 10px;
+text-align: right;
+width: 211px;
+}
+.dv_Res_Hist {
+font-size:11px;
+position: relative;
+top: -7px;
+height: 8px;
+}
+.dv_Res {
+font-size: 20px;
+position: relative;
+}
+h1 {
+font-style:italic;
+}

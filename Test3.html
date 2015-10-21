@@ -1,0 +1,112 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Test 3</title>
+    <script src="js/jquery-1.10.1.min.js"></script>
+    <script src="js/phaser.min.js"></script>
+    <script type="text/javascript">
+    var cw = $(window).innerWidth(), ch = $(window).innerHeight(), CellGroup,explosions,cols=1,rows=3,txt;
+    var game = new Phaser.Game(cw, ch, Phaser.AUTO, '', { preload: preload, create: create, update: update,render:render });
+    $(window).resize(function () { resizer(); });
+    function preload() {
+        game.time.advancedTiming = true;
+        game.load.spritesheet("green", "img/green-dot.png", 181, 203, 2);
+        game.load.spritesheet("load", "img/loading.png", 62,66,10);
+        game.load.image("blue","img/blue-dot.png");
+    }
+    function create() {
+        game.physics.startSystem(Phaser.Physics.ARCADE);
+        game.stage.backgroundColor = "#FFF";
+        ScaleGame();
+        CellGroup = game.add.group();
+        CellGroup.enableBody = true;
+        CellGroup.physicsBodyType = Phaser.Physics.ARCADE;
+        CellGroup.setAll('anchor.x', 0.5);
+        CellGroup.setAll('anchor.y', 1);
+        CreateCell(cols, rows);
+        
+        explosions = game.add.group();
+        explosions.createMultiple(1, "green");
+        explosions.forEach(function (obj) {
+            obj.animations.add("green");
+        }, this);
+
+        txt = game.add.text(game.world.width / 2, game.world.height / 4, " ", { fill: "#4285F4" });
+        var load = game.add.sprite(50, 50, "green");
+        load.animations.add("green");
+        load.animations.play("green", 120, true);
+        game.physics.enable(CellGroup);
+        game.physics.arcade.gravity.y = 350;
+    }
+    function render()
+    {
+        game.debug.text(game.time.fps+" fps" || '--', 2, 14, "#4285F4");
+    }
+
+    function ScaleGame()
+    {
+        game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
+        game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+        game.scale.pageAlignHorizontally = true;
+        game.scale.pageAlignVertically = true;
+        game.scale.setScreenSize(true);
+    }
+    function CreateCell(cols,rows) {
+        var GroupCellCount = cols * rows;
+
+        for (var i = 0; i < cols; i++) {
+            for (var j = 0; j < rows; j++) {
+                var cir = CellGroup.create(game.world.width / 2 , j*100,"blue");
+                cir.anchor.setTo(0.5, 0.5);
+                cir.inputEnabled = true;
+                cir.events.onInputDown.add(circleClicked, this);
+            }
+        }
+        for (var k = 0; k < 2; k++) {
+            var cell = CellGroup.getRandom(0, CellGroup.length - 1);
+            if (cell)
+            {
+                cell.loadTexture("green");
+            }
+        }
+
+    }
+    function circleClicked(sprite,pointer)
+    {
+
+        sprite.kill();
+        var explosion = explosions.getRandom(0, explosions.length - 1);
+        if (explosion) {
+            explosion.reset(sprite.body.x , sprite.body.y);
+            explosion.play('green', 10, false, true);
+            
+        }
+        if (sprite.key == "green")
+        {
+            txt.text = "-- G A M E O V E R --";
+            
+        }
+    }
+    function resizer() {
+        var myheight = $(window).innerHeight();
+        var mywidth = $(window).innerWidth();
+        try {
+            game.width = Number(mywidth);
+            game.height = Number(myheight);
+            game.stage._bounds.width = Number(mywidth);
+            game.stage._bounds.height = Number(myheight);
+            game.renderer.resize(Number(mywidth), Number(myheight));
+            Phaser.Canvas.setSmoothingEnabled(game.context, false);
+        }
+        catch (e) {
+            console.log("Error description: " + e.message);
+        }
+    }
+    function update() { }
+    </script>
+
+</head>
+<body>
+
+</body>
+</html>
